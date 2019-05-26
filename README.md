@@ -35,23 +35,23 @@ I hope this will be diffrent and if you have any concerns or updates will be muc
 The best way for me to install it is using the git repository, or download the [API Platform as .zip file from Github](https://github.com/api-platform/api-platform).
 
 ```bash
-git clone https://github.com/api-platform/api-platform.git apiplatform-user-auth
+$ git clone https://github.com/api-platform/api-platform.git apiplatform-user-auth
 
-cd apiplatform-user-auth
+$ cd apiplatform-user-auth
 ```
 ##### Make sure nothing on the required ports:
 Now, first of all the whole api platform runs on specific ports, so you need to make sure that this ports is free and nothing is listening to it.
 * How i can know this ports?
-    * You can find them in the docker-compose.yml file in the project root directory, and they always like [80, 81, 8080, 8081, 3000, 5432, 1337, 8443, 8444, 443, 444]
+    * You can find them in the docker-compose.yml file in the project root directory, and they always be like [80, 81, 8080, 8081, 3000, 5432, 1337, 8443, 8444, 443, 444]
 * How to know this?
     * Run this command 
     ```bash
-      sudo lsof -nP | grep LISTEN
+      $ sudo lsof -nP | grep LISTEN
     ```
 * What to do know?
     * Kill any process listening on any of the above ports.
     ```bash
-      sudo kill -9 $PROCESS_NUMBER
+      $ sudo kill -9 $PROCESS_NUMBER
     ```
 ------------------------------------------------------------
 
@@ -64,10 +64,10 @@ docker-compose pull
 ```bash
 docker-compose up -d
 ```   
-* You may face some issue here so better to bring everything down and run the command again like this
+* You may face some issue here so better to bring all containers down and run the command again like this
 ```bash
-  docker-compose down
-  COMPOSE_HTTP_TIMEOUT=120 docker-compose up -d
+  $ docker-compose down
+  $ COMPOSE_HTTP_TIMEOUT=120 docker-compose up -d
 ``` 
 * Now the application should be running and everything in place:
 ```bash
@@ -83,18 +83,18 @@ a12ff2759ca4        quay.io/api-platform/varnish     "docker-varnish-entr…"   
 1bc8e386bf02        quay.io/api-platform/client      "/bin/sh -c 'yarn st…"   2 minutes ago        Up About a minute   0.0.0.0:80->3000/tcp                                                     apiplatform-user-auth_client_1_1c413b4e4a5e
 c22bef7a0b3f        quay.io/api-platform/admin       "/bin/sh -c 'yarn st…"   2 minutes ago        Up About a minute   0.0.0.0:81->3000/tcp                                                     apiplatform-user-auth_admin_1_cfecc5c6b442
 ```
-* Now, if you go to [localhost:8080](http://localhost:8080) you will see their some sample apis listed their the example that comes with the project.
+* Now, if you go to [localhost:8080](http://localhost:8080) you will see their some simple apis listed their, it is the example entity that comes with the project.
 
 ------------------------------------------------------------
 
 ### Create the User entity based on [Doctrine User Provider](https://symfony.com/doc/current/security/user_provider.html)
 * Install the doctrine maker package to help us make it quick :)
 ```bash
-docker-compose exec php composer require doctrine maker
+$ docker-compose exec php composer require doctrine maker
 ```
 * Create our User entity 
 ```bash
-docker-compose exec php bin/console make:user
+$ docker-compose exec php bin/console make:user
 
  The name of the security user class (e.g. User) [User]:
  > Users
@@ -132,7 +132,7 @@ You should use Argon2i unless your production system will not support it.
 ```
 
 * If you go now to "api/src/Entity" you will find your entity there. If you scroll down a little bit to the getEmail & getPassword functions you will see
-something like this which means the this two will be used as the User identifier in the authentication. (Will not use the ROLES in this example it is so simple one)
+something like this, which means this two properties will be used as the User identifier in the authentication. (Will not use the ROLES in this example as it is so simple one)
 ```php
 # api/src/Entity/Users.php
 
@@ -140,7 +140,7 @@ something like this which means the this two will be used as the User identifier
 * @see UserInterface
 */
 ```
-- As you know the latest versions of symfony using the [autowiring](https://symfony.com/doc/current/service_container/autowiring.html), feature so also you can see that this entity is already wired and injected with teh repository called "api/src/Repository/UsersReporitory"
+- As you know the latest versions of symfony using the [autowiring](https://symfony.com/doc/current/service_container/autowiring.html) feature so you can see that this entity is already wired and injected with teh repository called "api/src/Repository/UsersReporitory"
 ```php
 # api/src/Entity/Users.php
 
@@ -153,7 +153,7 @@ class Users implements UserInterface
 }
 ```
 ------------------------------------------------------------
-* You can see clearly in this repository some pre-implemented functions like findbyId(), but now let is create another
+* You can see clearly in this repository some pre-implemented functions like findbyId(), but now let us create another
 function that helps us to create a new user.
     * To add user into the Db will need to define an entity manager like the following:
     ```php
@@ -181,7 +181,7 @@ function that helps us to create a new user.
     }
     ```
     
-    * Now, let is create our function like the followings:
+    * Now, let us create our function like the followings:
     ```php
     # api/src/Repository/UsersRepository.php
   
@@ -207,7 +207,7 @@ function that helps us to create a new user.
 ------------------------------------------------------------
 * Let us create our controller to consume that repository, will call it "AuthController".
 ```bash
-docker-compose exec php bin/console make:controller
+$ docker-compose exec php bin/console make:controller
 
  Choose a name for your controller class (e.g. TinyJellybeanController):
  > AuthController
@@ -246,7 +246,7 @@ docker-compose exec php bin/console make:controller
         .......
     }
     ```
-    * As you see how this controller will know this repository so will inject it first.
+    * Now, we need to make this controller know about the User repository, so we will inject it as a service.
     ```yaml
     # api/config/services.yaml
     
@@ -264,7 +264,7 @@ docker-compose exec php bin/console make:controller
           arguments:
               - '@app.user.repository'
     ```
-    * Now, it is our time to implement our new endpoint.
+    * Now, it is time to implement our new endpoint to register a new account.
     ```php
     # api/src/Controller/AuthController.php
     
@@ -289,7 +289,7 @@ docker-compose exec php bin/console make:controller
         return new Response(sprintf('User %s successfully created', $user->getUsername()));
     }
     ```
-    * Now, we need to let the framework to know about this new api
+    * Now, we need to let the framework to know about this new endpoint by adding it to our routes file
     ```yaml
     # src/config/routes.yaml
   
@@ -309,7 +309,7 @@ $ docker-compose exec php bin/console doctrine:migrations:migrate
 
   WARNING! You are about to execute a database migration that could result in schema changes and data loss. Are you sure you wish to continue? (y/n) y
 ```
-* Now, from Postman or any other client you use. Her am using CURL
+* Now, from Postman or any other client you use. Here am using CURL
 ```bash
 $ curl -X POST -H "Content-Type: application/json" "http://localhost:8080/register?email=test1@mail.com&password=test1"
 User test1@mail.com successfully created
@@ -328,7 +328,7 @@ $ api=# select * from users;
 ```
 ------------------------------------------------------------
 * Oooooh, woow the password is not encrypted what should we do!!!
-    * So, as i said before it is exaclty the same as Symfony that is why i said you need to have knowledge about symfony. So will use the Password encoder class.
+    * So, as i said before this project is built on Symfony that is why i said you need to have knowledge about symfony. So will use the Password encoder class.
     ```php
     # api/src/Repository/UsersRepository.php
   
@@ -355,7 +355,7 @@ $ api=# select * from users;
       }
     }
     ```
-    * We need to inject it to the repository:
+    * As always we need to inject it to the repository:
     ```yaml
     # api/config/services.yaml
     
@@ -402,7 +402,7 @@ $ docker-compose exec php composer require jwt-auth
 ```
 ------------------------------------------------------------
 #### Create our authentication
-* Before anything if you tried this call for now you will get this result:
+* **(Additional)** Before anything if you tried this call for now you will get this result:
 ```bash
 $ curl -X GET -H "Content-Type: application/json" "http://localhost:8080/greetings"
 {
@@ -413,7 +413,7 @@ $ curl -X GET -H "Content-Type: application/json" "http://localhost:8080/greetin
     "hydra:totalItems": 0
 }
 ```
-* Let us keep going for now, create a new & very simple API that we will use it in our testing now will call it "/api"
+* Let us keep going for now, create a new & so simple endpoint that we will use it in our testing now will call it "/api"
 ```php
 # api/src/Controller/AuthController.php
 
@@ -455,7 +455,7 @@ api:
         stateless: true
         anonymous: true
     ```
-    * Now, let is assume that we need everything generated by the api-platform to not work without JWT token, meaning without authenticated user the api shouldn't return anything.
+    * Now, let us assume that we need everything generated by the api-platform to not work without JWT token, meaning without authenticated user the api shouldn't return anything.
     So will update the "main" part configs to be like this:
     ```yaml
     # api/config/packages/security.yaml
@@ -474,7 +474,7 @@ api:
             authenticators:
                 - lexik_jwt_authentication.jwt_token_authenticator
     ```
-    * Also, add some configs for our simple /api.
+    * Also, add some configs for our simple endpoint /api.
     ```yaml
     # api/config/packages/security.yaml
   
@@ -487,11 +487,10 @@ api:
             authenticators:
                 - lexik_jwt_authentication.jwt_token_authenticator
     ```
-    * As you see in the above configs we set the anonymous to False we don't want anyone to access this two APIs now, also
-    we telling the framework the provider for you is the user provider, and at the end we telling it it is authentication messages
-    if it failed or something happened.
+    * As you see in the above configs we set the **anonymous** to **false** we don't want anyone to access this two APIs now, also
+    we telling the framework the provider for you is the **user provider** that we defined before, and at the end we telling it which authenticator you will use and the authentication success/faliure messages.
     
-    * Now, if you tried the call we make it in the beginning  for the /greetings api
+    * Now, if you tried the call we tried it in the **Additional** part  for the /greetings api
     ```bash
     $ curl -X GET -H "Content-Type: application/json" "http://localhost:8080/greetings"
       {
@@ -499,7 +498,7 @@ api:
           "message": "JWT Token not found"
       }
     ```
-    * The same with the simple /api we created:
+    * The same with the our simple endpoint /api that we created:
     ```bash
     $ curl -X POST -H "Content-Type: application/json" "http://localhost:8080/api" 
       {
@@ -507,8 +506,8 @@ api:
         "message": "JWT Token not found"
       }
     ```
-    * As you see it asks you to login :D, there is no token specified so we will creat a very simple API that used by the lexik jwt to authenticate the users,
-    and generate their tokens, remember that the login check path should be the same as the check_path under json_login in the security file:
+    * As you see it asks you to login :D, there is no JWT token specified so we will create a very simple API that used by the lexik jwt to authenticate the users,
+    and generate their tokens, remember that the login check path should be the same as the **check_path** under **json_login** in the security file:
     ```yaml
     # api/config/packages/security.yaml
     ....
@@ -522,21 +521,21 @@ api:
           path: /login
           methods: ['POST']
     ```
-    * Now, Lets try it out and see is it will generate a token for us or what!
+    * Now, Lets try it out and see if it will generate a token for us or what!
     ```bash
     $ curl -X POST -H "Content-Type: application/json" http://localhost:8080/login -d '{"email":"test2@mail.com","password":"test2"}'
       {"token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE1NTg2OTg4MTIsImV4cCI6MTU1ODcwMjQxMiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sInVzZXJuYW1lIjoidGVzdDJAbWFpbC5jb20ifQ.nzd5FVhcyrfjYyN8jRgYFp3VOB2QytnPPRGNyp4ZtfLx6IRwg0TWZJPu5OFtOKPkdLO8DQAr_4Fpq_G6oPjzoxmGOASNuRoQonik9FCCq6oAIW3k5utzQecXDVE_ImnfgByc6WYW6a-aWLnsq1qtvxy274ojqdR0rWLePwSWX5K5-t08zDBgavO_87dVpYd0DLwhHIS7F10lNscET7bfWS-ioPDTv-G74OvkcpbcjgwHhXlO7TYubnrES-FsvAw7kezQe4BPxdbXr1w-XBZuqTNEU4MyrBuadSLgjoe_gievNBtkVhKErIkEQZVjeJIQ4xaKaxwmPxZcP9jYkE47myRdbMsL9XHSd0XmGq0bPuGjOJ2KLTmUb5oeuRnY-e9Q_V9BbouEGw0sjw2meo6Jot2MZyv5ZnLci_GwpRtWqmV7ZLw5jNyiLDFXR1rz70NcJh7EXqu9o4nno3oc68zokfDQvGkJJJZMtBrLCK5pKGMh0a1elIz41LRLZvpLYCrOZ2f4wCkGRD_U92iILD6w8EdVWGoO1wTn5Z2k8-GS1-QH9f-4KkOpaYGPCwwdrY7yioSt2oVbEj2FOb1jULteeP_Cpu44HyJktPLPW_wrN2OtZlUFr4Vz_owDSIvNESYk1JBQ_Fjlv9QGmUs9itzaDExjfB4QYoGkvpfNymtw2PI"}
     ```
-    As you see it really logged me in and created some token for me so I can use it to call any api in the application.
-    If it show some exception like Unable to generate token for the specified configurations, [please check this step here](https://github.com/lexik/LexikJWTAuthenticationBundle/blob/master/Resources/doc/index.md#generate-the-ssh-keys-).
-    First open you .env file we will need the **JWT_PASSPHRASE** so keep it opened
+    As you see it created JWT token for me, so I can use it to call any api in the application.
+    If it show some exception like **Unable to generate token for the specified configurations**, [please check this step here](https://github.com/lexik/LexikJWTAuthenticationBundle/blob/master/Resources/doc/index.md#generate-the-ssh-keys-).
+    First open you **.env** file we will need the **JWT_PASSPHRASE** so keep it opened
     ```bash
     $ mkdir -p api/config/jwt
     $ openssl genrsa -out api/config/jwt/private.pem -aes256 4096 # this will ask you for the JWT_PASSPHRASE
     $ openssl rsa -pubout -in api/config/jwt/private.pem -out api/config/jwt/public.pem # will confirm the JWT_PASSPHRASE again
     ```
     
-    * Lets try it our to call /api or greetings with this token now:
+    * Lets try it out to call /api or /greetings endpoints with this token now:
     ```bash
     $ curl -X GET -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE1NTg2OTg4MTIsImV4cCI6MTU1ODcwMjQxMiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sInVzZXJuYW1lIjoidGVzdDJAbWFpbC5jb20ifQ.nzd5FVhcyrfjYyN8jRgYFp3VOB2QytnPPRGNyp4ZtfLx6IRwg0TWZJPu5OFtOKPkdLO8DQAr_4Fpq_G6oPjzoxmGOASNuRoQonik9FCCq6oAIW3k5utzQecXDVE_ImnfgByc6WYW6a-aWLnsq1qtvxy274ojqdR0rWLePwSWX5K5-t08zDBgavO_87dVpYd0DLwhHIS7F10lNscET7bfWS-ioPDTv-G74OvkcpbcjgwHhXlO7TYubnrES-FsvAw7kezQe4BPxdbXr1w-XBZuqTNEU4MyrBuadSLgjoe_gievNBtkVhKErIkEQZVjeJIQ4xaKaxwmPxZcP9jYkE47myRdbMsL9XHSd0XmGq0bPuGjOJ2KLTmUb5oeuRnY-e9Q_V9BbouEGw0sjw2meo6Jot2MZyv5ZnLci_GwpRtWqmV7ZLw5jNyiLDFXR1rz70NcJh7EXqu9o4nno3oc68zokfDQvGkJJJZMtBrLCK5pKGMh0a1elIz41LRLZvpLYCrOZ2f4wCkGRD_U92iILD6w8EdVWGoO1wTn5Z2k8-GS1-QH9f-4KkOpaYGPCwwdrY7yioSt2oVbEj2FOb1jULteeP_Cpu44HyJktPLPW_wrN2OtZlUFr4Vz_owDSIvNESYk1JBQ_Fjlv9QGmUs9itzaDExjfB4QYoGkvpfNymtw2PI" "http://localhost:8080/greetings"
     {
@@ -554,13 +553,13 @@ api:
     ```
     I guess now you see the diffrence.
     
-    * what about the /api one let us try it out:
+    * what about the /api endpoint let us try it out:
     ```bash
     $ curl -X POST -H "Content-Type: application/json" -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE1NTg2OTg4MTIsImV4cCI6MTU1ODcwMjQxMiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sInVzZXJuYW1lIjoidGVzdDJAbWFpbC5jb20ifQ.nzd5FVhcyrfjYyN8jRgYFp3VOB2QytnPPRGNyp4ZtfLx6IRwg0TWZJPu5OFtOKPkdLO8DQAr_4Fpq_G6oPjzoxmGOASNuRoQonik9FCCq6oAIW3k5utzQecXDVE_ImnfgByc6WYW6a-aWLnsq1qtvxy274ojqdR0rWLePwSWX5K5-t08zDBgavO_87dVpYd0DLwhHIS7F10lNscET7bfWS-ioPDTv-G74OvkcpbcjgwHhXlO7TYubnrES-FsvAw7kezQe4BPxdbXr1w-XBZuqTNEU4MyrBuadSLgjoe_gievNBtkVhKErIkEQZVjeJIQ4xaKaxwmPxZcP9jYkE47myRdbMsL9XHSd0XmGq0bPuGjOJ2KLTmUb5oeuRnY-e9Q_V9BbouEGw0sjw2meo6Jot2MZyv5ZnLci_GwpRtWqmV7ZLw5jNyiLDFXR1rz70NcJh7EXqu9o4nno3oc68zokfDQvGkJJJZMtBrLCK5pKGMh0a1elIz41LRLZvpLYCrOZ2f4wCkGRD_U92iILD6w8EdVWGoO1wTn5Z2k8-GS1-QH9f-4KkOpaYGPCwwdrY7yioSt2oVbEj2FOb1jULteeP_Cpu44HyJktPLPW_wrN2OtZlUFr4Vz_owDSIvNESYk1JBQ_Fjlv9QGmUs9itzaDExjfB4QYoGkvpfNymtw2PI" "http://localhost:8080/api"
     Logged in as test2@mail.com
     ```
-    As you can see only from the JWT token you can know exactly whos is logged in, and you can improve this by implmenting new User 
-    properties like isActive or userRoles .... so on and improve it.
+    As you can see only from the JWT token you can know exactly whos is logged in, and you can improve this by implmenting additonal User 
+    properties like isActive or userRoles...etc.
 
 ------------------------------------------------------------
 ##### Thank you for coming so far in this tutorials, I hope that you learned something new.
